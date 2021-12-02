@@ -1,3 +1,5 @@
 fn main() {
-    println!("Hello, world!");
+    let input = include_str!("../input.txt");
+
+    println!("Input:\n{}", input);
 }
