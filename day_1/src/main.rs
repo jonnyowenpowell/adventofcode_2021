@@ -13,5 +13,16 @@ fn main() {
         }
     }
 
-    println!("Result:\n{}", reading_increases);
+    println!("Reading Increases:\n{}", reading_increases);
+
+    let mut window_increases = 0;
+    for i in 0..(readings.len() - 3) {
+        let window_a: i32 = readings[i..i + 3].iter().sum();
+        let window_b: i32 = readings[i + 1..i + 4].iter().sum();
+        if window_a < window_b {
+            window_increases += 1;
+        }
+    }
+
+    println!("Window Increases:\n{}", window_increases);
 }
