@@ -6,5 +6,12 @@ fn main() {
         .map(|l| l.parse().unwrap())
         .collect();
 
-    println!("Input:\n{:?}", readings);
+    let mut reading_increases = 0;
+    for i in 1..readings.len() {
+        if readings[i] > readings[i - 1] {
+            reading_increases += 1;
+        }
+    }
+
+    println!("Result:\n{}", reading_increases);
 }
