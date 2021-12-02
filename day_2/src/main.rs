@@ -8,26 +8,57 @@ enum Command {
 fn main() {
     let input = include_str!("../input.txt");
 
-    let commands: Vec<_> = input.split("\n").filter(|l| !l.is_empty()).map(|l| {
-        let parts: Vec<_> = l.split_whitespace().collect();
-        let value: i32 = parts[1].parse().unwrap();
-        match parts[0] {
-            "forward" => Command::Forward(value),
-            "down" => Command::Down(value),
-            "up" => Command::Up(value),
-            _ => panic!("unrecognised command")
-        }
-    }).collect();
+    let commands: Vec<_> = input
+        .split("\n")
+        .filter(|l| !l.is_empty())
+        .map(|l| {
+            let parts: Vec<_> = l.split_whitespace().collect();
+            let value: i32 = parts[1].parse().unwrap();
+            match parts[0] {
+                "forward" => Command::Forward(value),
+                "down" => Command::Down(value),
+                "up" => Command::Up(value),
+                _ => panic!("unrecognised command"),
+            }
+        })
+        .collect();
 
     let (mut h, mut v) = (0, 0);
 
     for command in &commands {
         match command {
-            Command::Forward(x) => { h += x; },
-            Command::Down(x) => { v += x; },
-            Command::Up(x) => { v -= x; },
+            Command::Forward(x) => {
+                h += x;
+            }
+            Command::Down(x) => {
+                v += x;
+            }
+            Command::Up(x) => {
+                v -= x;
+            }
         }
     }
 
     println!("Resulting position: ({}, {})", h, v);
+
+    h = 0;
+    v = 0;
+    let mut aim = 0;
+
+    for command in &commands {
+        match command {
+            Command::Forward(x) => {
+                h += x;
+                v += aim * x;
+            }
+            Command::Down(x) => {
+                aim += x;
+            }
+            Command::Up(x) => {
+                aim -= x;
+            }
+        }
+    }
+
+    println!("Adjusted resulting position: ({}, {})", h, v);
 }
