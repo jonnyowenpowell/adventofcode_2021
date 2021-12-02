@@ -29,5 +29,5 @@ fn main() {
         }
     }
 
-    println!("Resulting position:\n ({}, {})", h, v);
+    println!("Resulting position: ({}, {})", h, v);
 }
