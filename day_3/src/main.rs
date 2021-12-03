@@ -6,20 +6,17 @@ fn main() {
         .lines()
         .map(|l| u32::from_str_radix(l, 2).unwrap())
         .collect();
-    let number_count = input_numbers.len();
+    let number_count = input_numbers.len() as f32;
 
     let (mut gamma, mut epsilon) = (0, 0);
     for i in 0..bit_length {
+        let mask = 2_u32.pow(i);
         let is_gamma_bit_set =
-            input_numbers
-                .iter()
-                .fold(0, |c, n| if n & 2_u32.pow(i) > 0 { c + 1 } else { c })
-                > number_count / 2;
-        let inc = 2_u32.pow(i);
+            (count_non_zero_masked(mask, &input_numbers) as f32) > number_count / 2.0;
         if is_gamma_bit_set {
-            gamma += inc;
+            gamma += mask;
         } else {
-            epsilon += inc;
+            epsilon += mask;
         }
     }
 
@@ -31,11 +28,8 @@ fn main() {
     let mut oxygen_rating: Option<u32> = Option::None;
     for i in 0..bit_length {
         let mask = 2_u32.pow(bit_length - (i + 1));
-        let is_bit_commonly_set =
-            oxygen_rating_candidates
-                .iter()
-                .fold(0, |c, n| if n & mask > 0 { c + 1 } else { c }) as f32
-                >= oxygen_rating_candidates.len() as f32 / 2.0;
+        let is_bit_commonly_set = count_non_zero_masked(mask, &oxygen_rating_candidates) as f32
+            >= oxygen_rating_candidates.len() as f32 / 2.0;
         oxygen_rating_candidates = oxygen_rating_candidates
             .into_iter()
             .filter(|&n| n & mask == if is_bit_commonly_set { mask } else { 0 })
@@ -50,11 +44,8 @@ fn main() {
     let mut co2_rating: Option<u32> = Option::None;
     for i in 0..bit_length {
         let mask = 2_u32.pow(bit_length - (i + 1));
-        let is_bit_uncommonly_set =
-            (co2_rating_candidates
-                .iter()
-                .fold(0, |c, n| if n & mask > 0 { c + 1 } else { c }) as f32)
-                < (co2_rating_candidates.len() as f32 / 2.0);
+        let is_bit_uncommonly_set = (count_non_zero_masked(mask, &co2_rating_candidates) as f32)
+            < (co2_rating_candidates.len() as f32 / 2.0);
         co2_rating_candidates = co2_rating_candidates
             .into_iter()
             .filter(|&n| n & mask == if is_bit_uncommonly_set { mask } else { 0 })
@@ -71,4 +62,10 @@ fn main() {
         "Life Support Rating: {}",
         oxygen_rating.unwrap() * co2_rating.unwrap()
     );
+}
+
+fn count_non_zero_masked(mask: u32, input: &Vec<u32>) -> u32 {
+    input
+        .iter()
+        .fold(0, |c, n| if n & mask > 0 { c + 1 } else { c })
 }
