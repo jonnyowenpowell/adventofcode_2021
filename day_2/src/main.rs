@@ -2,13 +2,10 @@ fn main() {
     let commands = parse_input();
 
     let position = calculate_position(&commands);
-    println!("Resulting position: ({}, {})", position.0, position.1);
+    println!("Position: {:?}", position);
 
     let adjusted_position = calculate_adjusted_position(&commands);
-    println!(
-        "Resulting position: ({}, {})",
-        adjusted_position.0, adjusted_position.1
-    );
+    println!("Adjusted position: {:?}", adjusted_position);
 }
 
 #[derive(Debug)]
