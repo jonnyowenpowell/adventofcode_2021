@@ -1,13 +1,13 @@
 #![feature(test)]
 
 fn main() {
-    let mut input = parse_input();
+    let mut readings = parse_input();
 
-    let reading_increases = count_increases(&input);
-    println!("Reading Increases:\n{}", reading_increases);
+    let reading_increases = count_increases(&readings);
+    println!("Reading increases: {}", reading_increases);
 
-    let window_increases = count_window_increases(&mut input);
-    println!("Window Increases:\n{}", window_increases);
+    let window_increases = count_window_increases(&mut readings);
+    println!("Window increases: {}", window_increases);
 }
 
 fn parse_input() -> Vec<u32> {
@@ -17,26 +17,26 @@ fn parse_input() -> Vec<u32> {
         .collect()
 }
 
-fn count_increases(input: &Vec<u32>) -> u32 {
-    let mut reading_increases = 0;
-    for i in 1..input.len() {
-        if input[i] > input[i - 1] {
-            reading_increases += 1;
+fn count_increases(values: &Vec<u32>) -> u32 {
+    let mut increases = 0;
+    for i in 1..values.len() {
+        if values[i] > values[i - 1] {
+            increases += 1;
         }
     }
-    reading_increases
+    increases
 }
 
-fn calculate_cumulative_sums(input: &mut Vec<u32>) -> &mut Vec<u32> {
-    input.iter_mut().fold(0, |acc, x| {
+fn calculate_cumulative_sums(values: &mut Vec<u32>) -> &mut Vec<u32> {
+    values.iter_mut().fold(0, |acc, x| {
         *x += acc;
         *x
     });
-    input
+    values
 }
 
-fn count_window_increases(input: &mut Vec<u32>) -> u32 {
-    let cumulative_sums = calculate_cumulative_sums(input);
+fn count_window_increases(readings: &mut Vec<u32>) -> u32 {
+    let cumulative_sums = calculate_cumulative_sums(readings);
     let windows: Vec<u32> = cumulative_sums
         .iter()
         .skip(3)
