@@ -1,19 +1,29 @@
-#[derive(Debug)]
-enum Command {
-    Forward(i32),
-    Down(i32),
-    Up(i32),
+fn main() {
+    let commands = parse_input();
+
+    let position = calculate_position(&commands);
+    println!("Resulting position: ({}, {})", position.0, position.1);
+
+    let adjusted_position = calculate_adjusted_position(&commands);
+    println!(
+        "Resulting position: ({}, {})",
+        adjusted_position.0, adjusted_position.1
+    );
 }
 
-fn main() {
-    let input = include_str!("../input.txt");
+#[derive(Debug)]
+enum Command {
+    Forward(u32),
+    Down(u32),
+    Up(u32),
+}
 
-    let commands: Vec<_> = input
-        .split("\n")
-        .filter(|l| !l.is_empty())
+fn parse_input() -> Vec<Command> {
+    include_str!("../input.txt")
+        .lines()
         .map(|l| {
             let parts: Vec<_> = l.split_whitespace().collect();
-            let value: i32 = parts[1].parse().unwrap();
+            let value: u32 = parts[1].parse().unwrap();
             match parts[0] {
                 "forward" => Command::Forward(value),
                 "down" => Command::Down(value),
@@ -21,11 +31,12 @@ fn main() {
                 _ => panic!("unrecognised command"),
             }
         })
-        .collect();
+        .collect()
+}
 
+fn calculate_position(commands: &Vec<Command>) -> (u32, u32) {
     let (mut h, mut v) = (0, 0);
-
-    for command in &commands {
+    for command in commands {
         match command {
             Command::Forward(x) => {
                 h += x;
@@ -38,14 +49,12 @@ fn main() {
             }
         }
     }
+    (h, v)
+}
 
-    println!("Resulting position: ({}, {})", h, v);
-
-    h = 0;
-    v = 0;
-    let mut aim = 0;
-
-    for command in &commands {
+fn calculate_adjusted_position(commands: &Vec<Command>) -> (u32, u32) {
+    let (mut aim, mut h, mut v) = (0, 0, 0);
+    for command in commands {
         match command {
             Command::Forward(x) => {
                 h += x;
@@ -59,6 +68,5 @@ fn main() {
             }
         }
     }
-
-    println!("Adjusted resulting position: ({}, {})", h, v);
+    (h, v)
 }
