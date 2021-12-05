@@ -1,71 +1,84 @@
 fn main() {
+    let (numbers, bit_length) = parse_input();
+
+    let power_consumption = calculate_power_consumption(&numbers, bit_length);
+    println!("Power consumption: {}", power_consumption);
+
+    let life_support_rating = calculate_life_support_rating(&numbers, bit_length);
+    println!("Life Support rating: {}", life_support_rating);
+}
+
+fn parse_input() -> (Vec<u32>, u32) {
     let input = include_str!("../input.txt");
 
     let bit_length = input.lines().next().unwrap().len() as u32;
-    let input_numbers: Vec<_> = input
-        .lines()
-        .map(|l| u32::from_str_radix(l, 2).unwrap())
-        .collect();
-    let number_count = input_numbers.len() as f32;
+    (
+        input
+            .lines()
+            .map(|l| u32::from_str_radix(l, 2).unwrap())
+            .collect(),
+        bit_length,
+    )
+}
+
+fn count_non_zero_masked(input: &Vec<u32>, mask: u32) -> u32 {
+    input
+        .iter()
+        .fold(0, |c, n| if n & mask > 0 { c + 1 } else { c })
+}
+
+fn calculate_power_consumption(numbers: &Vec<u32>, bit_length: u32) -> u32 {
+    let number_count = numbers.len() as u32;
 
     let (mut gamma, mut epsilon) = (0, 0);
     for i in 0..bit_length {
         let mask = 2_u32.pow(i);
-        let is_gamma_bit_set =
-            (count_non_zero_masked(mask, &input_numbers) as f32) > number_count / 2.0;
-        if is_gamma_bit_set {
+        let is_bit_set = (2 * count_non_zero_masked(&numbers, mask)) > number_count;
+        if is_bit_set {
             gamma += mask;
         } else {
             epsilon += mask;
         }
     }
-
-    println!("Gamma: {:b}", gamma);
-    println!("Epsilon: {:b}", epsilon);
-    println!("Power Consumption: {}", gamma * epsilon);
-
-    let mut oxygen_rating_candidates = input_numbers.to_vec();
-    let mut oxygen_rating: Option<u32> = Option::None;
-    for i in 0..bit_length {
-        let mask = 2_u32.pow(bit_length - (i + 1));
-        let is_bit_commonly_set = count_non_zero_masked(mask, &oxygen_rating_candidates) as f32
-            >= oxygen_rating_candidates.len() as f32 / 2.0;
-        oxygen_rating_candidates = oxygen_rating_candidates
-            .into_iter()
-            .filter(|&n| n & mask == if is_bit_commonly_set { mask } else { 0 })
-            .collect();
-        if oxygen_rating_candidates.len() == 1 {
-            oxygen_rating = Some(*oxygen_rating_candidates.first().unwrap());
-            break;
-        }
-    }
-
-    let mut co2_rating_candidates = input_numbers.to_vec();
-    let mut co2_rating: Option<u32> = Option::None;
-    for i in 0..bit_length {
-        let mask = 2_u32.pow(bit_length - (i + 1));
-        let is_bit_uncommonly_set = (count_non_zero_masked(mask, &co2_rating_candidates) as f32)
-            < (co2_rating_candidates.len() as f32 / 2.0);
-        co2_rating_candidates = co2_rating_candidates
-            .into_iter()
-            .filter(|&n| n & mask == if is_bit_uncommonly_set { mask } else { 0 })
-            .collect();
-        if co2_rating_candidates.len() == 1 {
-            co2_rating = Some(*co2_rating_candidates.first().unwrap());
-            break;
-        }
-    }
-
-    println!("Oxygen Generator Rating: {:b}", oxygen_rating.unwrap());
-    println!("CO2 Scrubber Rating: {:b}", co2_rating.unwrap());
-    println!(
-        "Life Support Rating: {}",
-        oxygen_rating.unwrap() * co2_rating.unwrap()
-    );
+    gamma * epsilon
 }
 
-fn count_non_zero_masked(mask: u32, input: &Vec<u32>) -> u32 {
-    input
-        .iter()
-        .fold(0, |c, n| if n & mask > 0 { c + 1 } else { c })
+fn select_subsystem_rating(
+    numbers: &Vec<u32>,
+    bit_length: u32,
+    bit_condition: fn(bool, u32) -> u32,
+) -> u32 {
+    let mut candidates = numbers.to_vec();
+    let mut rating: Option<u32> = Option::None;
+    for i in 0..bit_length {
+        let mask = 2_u32.pow(bit_length - (i + 1));
+        let is_bit_commonly_set =
+            2 * count_non_zero_masked(&candidates, mask) >= candidates.len() as u32;
+        candidates = candidates
+            .into_iter()
+            .filter(|&n| n & mask == bit_condition(is_bit_commonly_set, mask))
+            .collect();
+        if candidates.len() == 1 {
+            rating = Some(*candidates.first().unwrap());
+            break;
+        }
+    }
+    rating.expect("subsystem rating not found")
+}
+
+fn calculate_life_support_rating(numbers: &Vec<u32>, bit_length: u32) -> u32 {
+    let oxygen_rating =
+        select_subsystem_rating(
+            &numbers,
+            bit_length,
+            |is_set, mask| if is_set { mask } else { 0 },
+        );
+
+    let co2_rating = select_subsystem_rating(
+        &numbers,
+        bit_length,
+        |is_set, mask| if is_set { 0 } else { mask },
+    );
+
+    oxygen_rating * co2_rating
 }
